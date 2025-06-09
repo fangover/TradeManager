@@ -1,0 +1,66 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Main",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "main.py"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "clear": true
+            },
+            "group": "build"
+        },
+        {
+            "label": "Output Directory",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                ".vscode/scripts/project_snapshot.py"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "clear": true
+            },
+            "group": "build"
+        },
+        {
+            "label": "Clean Python Cache",
+            "type": "shell",
+            "command": ".vscode/scripts/cleanup_python_cache.bat",
+            "args": [
+                "${workspaceFolder}"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build"
+        },
+        {
+            "label": "Build to exe",
+            "type": "shell",
+            "command": ".vscode/scripts/buildexe.bat",
+            "group": "build"
+        },
+        {
+            "label": "Install Dependencies",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "-m",
+                "pip",
+                "install",
+                "-r",
+                "requirements.txt"
+            ],
+            "group": "build"
+        }
+    ]
+}

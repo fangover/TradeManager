@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+# Distribution / packaging
+build/
+dist/
+*.log
+
+# PyCharm / VSCode settings
+.idea/
+.vscode/scripts/
+.vscode/.trashBackup
+
+# Environment variables
+.env
+.env.*
+
+/config/settings.py
+project_snapshot.txt

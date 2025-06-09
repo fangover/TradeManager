@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "../."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/env": true,
+			"**/venv": true,
+			"**/__pycache__": true,
+			"**/.vscode/.trashBackup/**": false
+		},
+		"search.exclude": {
+			"**/env": true,
+			"**/venv": true,
+			"**/__pycache__": true,
+			"**/.vscode/.trashBackup/**": true
+		}
+	}
+}
