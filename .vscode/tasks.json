@@ -6,7 +6,8 @@
             "type": "shell",
             "command": "${command:python.interpreterPath}",
             "args": [
-                "main.py"
+                "-m",
+                "core.application.main"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

@@ -4,7 +4,7 @@ from collections import deque
 import MetaTrader5 as mt5
 import numpy as np
 
-from infrastructure.brokers.base import BaseBroker
+from core.infrastructure.brokers.base import BaseBroker
 from models.candle import Candle
 
 

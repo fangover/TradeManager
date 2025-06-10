@@ -1,6 +1,5 @@
-from app import TradeApp
-
 from config.settings import config
+from core.application.app import TradeApp
 from core.utilities.logger import logger
 
 if __name__ == "__main__":

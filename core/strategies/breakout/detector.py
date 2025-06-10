@@ -1,9 +1,9 @@
 import MetaTrader5 as mt5
 
 from config.settings import Settings
-from core.state import TradingState
+from core.application.state import TradingState
+from core.infrastructure.brokers.base import BaseBroker
 from core.strategies.base import BaseDetector
-from infrastructure.brokers.base import BaseBroker
 from models.candle import Candle
 
 

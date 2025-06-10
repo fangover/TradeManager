@@ -3,15 +3,16 @@ import time
 from config.settings import Settings
 from core.application.state import TradingState
 from core.candle.candle_plotter import CandlePlotter
+from core.infrastructure.brokers import BrokerFactory
+from core.position.position_logger import PositionLogger
 from core.risk.manager import RiskManager
 from core.strategies.breakout.detector import BreakoutDetector
 from core.strategies.breakout.executor import BreakoutExecutor
 from core.strategies.loader import StrategyRegistry
 from core.strategies.mtc.detector import MajorTrendConfidenceDetector
 from core.strategies.mtc.executor import MajorTrendConfidenceExecutor
+from core.utilities.event_bus import EventBus
 from core.utilities.logger import logger
-from infrastructure.brokers import BrokerFactory
-from infrastructure.event_bus import EventBus
 
 
 class TradeApp:
@@ -19,7 +20,9 @@ class TradeApp:
         self.broker = BrokerFactory.create(config)
         self.bus = EventBus()
 
-        self.state = TradingState(self.broker)
+        self.state = TradingState(self.broker, self.bus)
+        self.position_logger = PositionLogger()
+        self.bus.subscribe("LOG_POSITION", self.position_logger.log_position)
 
         self.state.update_account_info()
         self.state.initialize_candles()

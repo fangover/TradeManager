@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 
 # TODO : Better refine logging to have multiple log handler
-LOG_DIR = "log"
+LOG_DIR = "out/log"
 os.makedirs(LOG_DIR, exist_ok=True)
 date_str = datetime.now().strftime("%y_%m_%d")
 LOG_FILE = os.path.join(LOG_DIR, f"trade_{date_str}.log")

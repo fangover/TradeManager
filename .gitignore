@@ -7,6 +7,7 @@ __pycache__/
 # Distribution / packaging
 build/
 dist/
+out/
 *.log
 
 # PyCharm / VSCode settings
@@ -19,4 +20,5 @@ dist/
 .env.*
 
 /config/settings.py
+/config/settings_example.py
 project_snapshot.txt

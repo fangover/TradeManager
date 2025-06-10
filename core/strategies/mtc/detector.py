@@ -5,10 +5,10 @@ import numpy as np
 from sklearn.linear_model import QuantileRegressor
 
 from config.settings import Settings
+from core.application.state import TradingState
 from core.candle.candle_plotter import plotter
-from core.state import TradingState
+from core.infrastructure.brokers.base import BaseBroker
 from core.strategies.base import BaseDetector
-from infrastructure.brokers.base import BaseBroker
 from models.candle import Candle
 
 
