@@ -20,5 +20,4 @@ out/
 .env.*
 
 /config/settings.py
-/config/settings_example.py
 project_snapshot.txt
