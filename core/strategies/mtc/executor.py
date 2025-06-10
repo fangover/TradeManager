@@ -1,6 +1,6 @@
 from config.settings import Settings
+from core.application.state import TradingState
 from core.risk.calculator import RiskCalculator
-from core.state import TradingState
 from core.strategies.base import BaseExecutor
 from infrastructure.brokers.base import BaseBroker
 from models.position import Position

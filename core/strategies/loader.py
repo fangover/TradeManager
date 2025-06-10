@@ -4,8 +4,8 @@ from typing import Any, Dict, Optional
 import schedule
 
 from core.strategies.base import BaseDetector, BaseExecutor
+from core.utilities.logger import logger
 from infrastructure.event_bus import event_bus
-from logger import logger
 
 
 class Strategy:

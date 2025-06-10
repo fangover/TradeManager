@@ -1,17 +1,17 @@
 import time
 
 from config.settings import Settings
+from core.application.state import TradingState
 from core.candle.candle_plotter import CandlePlotter
 from core.risk.manager import RiskManager
-from core.state import TradingState
 from core.strategies.breakout.detector import BreakoutDetector
 from core.strategies.breakout.executor import BreakoutExecutor
 from core.strategies.loader import StrategyRegistry
 from core.strategies.mtc.detector import MajorTrendConfidenceDetector
 from core.strategies.mtc.executor import MajorTrendConfidenceExecutor
+from core.utilities.logger import logger
 from infrastructure.brokers import BrokerFactory
 from infrastructure.event_bus import EventBus
-from logger import logger
 
 
 class TradeApp:
