@@ -1,9 +1,10 @@
-import logging
+import requests
 
 from config.settings import Settings
 from core.application.state import TradingState
 from core.infrastructure.brokers.base import BaseBroker
 from core.utilities.event_bus import EventBus
+from core.utilities.logger import logger
 from models.position import Position
 
 
@@ -15,7 +16,6 @@ class RiskManager:
         self.state = state
         self.config = config
         self.bus = bus
-        self.logger = logging.getLogger("risk")
 
     def evaluate(self):
         self.monitor_positions()
@@ -51,7 +51,9 @@ class RiskManager:
         ):
             self.broker.modify_position(position.id, breakeven_sl, position.take_profit)
             position.update_sl(breakeven_sl)
-            print(f"Breakeven SL updated for position {position.id}: {breakeven_sl}")
+            logger.info(
+                f"Breakeven SL updated for position {position.id}: {breakeven_sl}"
+            )
 
     def apply_trailing_stop(self, position: Position):
         trail_offset = self.config.TRAIL_DISTANCE * position.pips_point
@@ -65,7 +67,7 @@ class RiskManager:
 
         self.broker.modify_position(position.id, new_sl, position.take_profit)
         position.update_sl(new_sl)
-        print(f"Trailing SL updated for position {position.id}: {new_sl}")
+        logger.info(f"Trailing SL updated for position {position.id}: {new_sl}")
 
     def circuit_breaker_check(self):
         if self.state.account_balance <= 100:

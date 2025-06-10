@@ -1,11 +1,12 @@
+import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 
 import schedule
 
 from core.strategies.base import BaseDetector, BaseExecutor
-from core.utilities.logger import logger
 from core.utilities.event_bus import event_bus
+from core.utilities.logger import logger
 
 
 class Strategy:
@@ -45,6 +46,8 @@ class Strategy:
 
     def run(self) -> Optional[schedule.CancelJob]:
         """Execute the strategy's detection and execution logic."""
+        start = time.time()
+
         if self.should_stop():
             return schedule.CancelJob  # type: ignore
 
@@ -53,6 +56,8 @@ class Strategy:
         if direction in (-1, 1):
             logger.info(f"Executing {self.name} strategy")
             self.executor.execute(direction)
+
+        print(f"Run {self.name} strategy in {time.time() - start:.2f}s")
         return None
 
 
