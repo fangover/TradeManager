@@ -1,5 +1,3 @@
-import requests
-
 from config.settings import Settings
 from core.application.state import TradingState
 from core.infrastructure.brokers.base import BaseBroker
