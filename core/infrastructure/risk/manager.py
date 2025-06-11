@@ -21,7 +21,7 @@ class RiskManager:
 
     def monitor_positions(self):
         """Monitor exisitnig position on MT5 broker."""
-        for position in list(self.state.open_positions.values()):
+        for position in list(self.state.position_manager.open_positions.values()):
             position: Position
             print(
                 f"Position #{position.id} | Type: {'BUY' if position.direction == 1 else 'SELL'} | "
@@ -32,7 +32,7 @@ class RiskManager:
 
     def check_position_risk(self, position: Position):
         if position.time_out != 0 and position.age > position.time_out:
-            self.state.close_position(position.id, "Timeout")
+            self.state.position_manager.close_position(position.id, "Timeout")
 
         if position.unrealized_pnl_pips > self.config.TRAIL_START:
             self.apply_trailing_stop(position)
@@ -72,9 +72,13 @@ class RiskManager:
             self.bus.publish("RISK_VIOLATION", "Account balance is zero!")
             return
 
-        if self.state.consecutive_losses > self.config.MAX_CONSECUTIVE_LOSSES:
+        if (
+            self.state.position_manager.consecutive_losses
+            > self.config.MAX_CONSECUTIVE_LOSSES
+        ):
             self.bus.publish(
-                "RISK_VIOLATION", f"{self.state.consecutive_losses} consecutive losses"
+                "RISK_VIOLATION",
+                f"{self.state.position_manager.consecutive_losses} consecutive losses",
             )
 
         drawdown = (

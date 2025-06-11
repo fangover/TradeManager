@@ -1,7 +1,7 @@
 from config.settings import Settings
 from core.application.state import TradingState
 from core.infrastructure.brokers.base import BaseBroker
-from core.risk.calculator import RiskCalculator
+from core.infrastructure.risk.calculator import RiskCalculator
 from core.strategies.base import BaseExecutor
 from models.position import Position
 
@@ -35,7 +35,7 @@ class MajorTrendConfidenceExecutor(BaseExecutor):
             direction=direction, volume=size, sl=stop_loss, tp=take_profit, comment="hi"
         )
         if order:
-            self.state.add_position(
+            self.state.position_manager.add_position(
                 Position(
                     id=order.ticket,
                     symbol=self.config.SYMBOL,

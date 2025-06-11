@@ -6,8 +6,8 @@ from sklearn.linear_model import QuantileRegressor
 
 from config.settings import Settings
 from core.application.state import TradingState
-from core.candle.candle_plotter import plotter
 from core.infrastructure.brokers.base import BaseBroker
+from core.infrastructure.candle.candle_plotter import plotter
 from core.strategies.base import BaseDetector
 from models.candle import Candle
 

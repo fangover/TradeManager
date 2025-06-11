@@ -87,6 +87,10 @@ class CandleManager:
 
         return candles_list[-count:]
 
+    def update_candles(self):
+        for timeframe in self.candle_cache.keys():
+            self.update_timeframe(timeframe)
+
     def update_timeframe(self, timeframe):
         """Update candle cache for a specific timeframe"""
         latest = self.broker.get_candles(timeframe, 1)
