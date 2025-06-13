@@ -5,7 +5,7 @@ import MetaTrader5 as mt5
 import numpy as np
 
 from core.infrastructure.brokers.base import BaseBroker
-from models.candle import Candle
+from models import Candle
 
 
 class CandleManager:

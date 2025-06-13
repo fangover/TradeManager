@@ -3,7 +3,7 @@ from core.application.state import TradingState
 from core.infrastructure.brokers.base import BaseBroker
 from core.utilities.event_bus import EventBus
 from core.utilities.logger import logger
-from models.position import Position
+from models import Position
 
 
 class RiskManager:

@@ -62,6 +62,21 @@
                 "requirements.txt"
             ],
             "group": "build"
-        }
+        },
+        {
+            "label": "Run Candle Pattern Test",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "./testcase/test_candle_stick_patterns.py"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "clear": true
+            },
+            "group": "test"
+        },
     ]
 }

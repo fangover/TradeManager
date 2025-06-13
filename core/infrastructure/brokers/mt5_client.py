@@ -60,14 +60,20 @@ class MT5Client(BaseBroker):
             }
 
             result = mt5.order_send(request)  # type: ignore
+            if result:
+                if result.retcode == mt5.TRADE_RETCODE_DONE:
+                    return result
+                else:
+                    logging.error(f"Error order send: {result.comment}")
 
-            if result.retcode == mt5.TRADE_RETCODE_DONE:
-                return result
-            # Only retry if the error is due to a requote or temporary market condition
-            if result and result.retcode not in [
-                mt5.TRADE_RETCODE_REQUOTE,
-                mt5.TRADE_RETCODE_PRICE_CHANGED,
-            ]:
+                # Only retry if the error is due to a requote or temporary market condition
+                if result and result.retcode not in [
+                    mt5.TRADE_RETCODE_REQUOTE,
+                    mt5.TRADE_RETCODE_PRICE_CHANGED,
+                ]:
+                    break
+            else:
+                logging.error(f"Error order send: Empty result")
                 break
             time.sleep(0.5)
         return None

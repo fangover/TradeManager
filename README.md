@@ -11,22 +11,26 @@ I’m building something I enjoy, not intended for real trading or financial use
 ## Features
 
 - **Broker Integration** via MetaTrader 5
+
 - **Risk Management** (trailing stop, breakeven, drawdown control, etc.)
-- **Multi-Timeframe Strategy Support**
-- **Strategies Included**:
-  - Breakout Detection & Execution
-  - Major Trend Confidence with Quantile Regression
-- Candlestick Chart Plotting with Matplotlib
-- Modular Event Bus System for loose coupling
+  - Constantly monitors existing positions in MT5 and sets breakeven
+  - Trailing stop automatically adjusts stop-loss as profit increases
 
----
+- **Support Multi-Strategy Detect & Execute**
+  - **Strategies Included**:
+    - Breakout Detection & Execution
+    - Major Trend Confidence with Quantile Regression
+    - M1 Scalping based on EMA
 
-## TODO
+- **Candlestick Pattern Detection**
+  - Bullish and Bearish Engulfing
+  - Hammer and Inverted Hammer
+  - Morning Star and Evening Star
+  - Doji and Shooting Star
+  - Hanging Man, Tweezer Top and Bottom
+  - Three White Soldiers and Three Black Crows
 
-- Add more detailed comments for better understanding.
-- Integrate a GUI interface to enhance usability.
-- Develop test cases and implement mock functions.
-
+- **Candlestick Chart Plotting** with Matplotlib
 
 ---
 

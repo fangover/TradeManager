@@ -1,9 +1,9 @@
 from config.settings import Settings
 from core.application.state import TradingState
 from core.infrastructure.brokers.base import BaseBroker
-from core.infrastructure.risk.calculator import RiskCalculator
+from core.infrastructure.risk import RiskCalculator
 from core.strategies.base import BaseExecutor
-from models.position import Position
+from models import Position
 
 
 class MajorTrendConfidenceExecutor(BaseExecutor):
@@ -26,6 +26,8 @@ class MajorTrendConfidenceExecutor(BaseExecutor):
             sl_distance,
             self.config.RISK_PER_TRADE,
             pip_value,
+            self.config.MIN_LOT_SIZE,
+            self.config.MAX_LOT_SIZE,
         )
 
         stop_loss = price - (direction * sl_distance)

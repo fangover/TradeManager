@@ -4,7 +4,7 @@ from config.settings import Settings
 from core.application.state import TradingState
 from core.infrastructure.brokers.base import BaseBroker
 from core.strategies.base import BaseDetector
-from models.candle import Candle
+from models import Candle
 
 
 class BreakoutDetector(BaseDetector):

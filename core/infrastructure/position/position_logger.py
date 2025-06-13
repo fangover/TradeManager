@@ -3,7 +3,7 @@ import os
 from datetime import datetime, timedelta, timezone
 from threading import Lock
 
-from models.position import Position
+from models import Position
 
 
 class PositionLogger:

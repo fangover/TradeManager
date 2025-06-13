@@ -1,10 +1,9 @@
 import MetaTrader5 as mt5
 
 from core.infrastructure.brokers.base import BaseBroker
-from core.infrastructure.candle.manger import CandleManager
-from core.infrastructure.position.manager import PositionManager
+from core.infrastructure.candle import CandleManager
+from core.infrastructure.position import PositionManager
 from core.utilities.event_bus import EventBus
-from models.position import Position
 
 
 class TradingState:

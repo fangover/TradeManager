@@ -1,6 +1,6 @@
 from core.infrastructure.brokers.base import BaseBroker
 from core.utilities.event_bus import EventBus
-from models.position import Position
+from models import Position
 
 
 class PositionManager:
