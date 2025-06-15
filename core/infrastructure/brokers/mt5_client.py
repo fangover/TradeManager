@@ -1,5 +1,6 @@
 import logging
 import time
+from datetime import datetime, timedelta, timezone
 
 import MetaTrader5 as mt5
 
@@ -37,6 +38,48 @@ class MT5Client(BaseBroker):
         return mt5.copy_rates_from_pos(  # type: ignore
             self.config.SYMBOL, timeframe, 0, count
         )
+
+    def get_historical_candles(self, timeframe, start_time, end_time):
+        symbol = self.config.SYMBOL
+        results = []
+        chunk_size = timedelta(days=30)
+        gmt8 = timezone(timedelta(hours=8))
+        current_start = datetime.fromtimestamp(start_time, tz=gmt8)
+        end_dt = datetime.fromtimestamp(end_time, tz=gmt8)
+
+        while current_start < end_dt:
+            current_end = min(current_start + chunk_size, end_dt)
+            rates = mt5.copy_rates_range(  # type: ignore
+                symbol,
+                timeframe,
+                current_start.astimezone(timezone.utc).replace(tzinfo=None),
+                current_end.astimezone(timezone.utc).replace(tzinfo=None),
+            )
+
+            if rates is not None:
+                for rate in rates:
+                    utc_time = datetime.utcfromtimestamp(rate["time"]).replace(
+                        tzinfo=timezone.utc
+                    )
+                    gmt8_time = utc_time.astimezone(gmt8)
+
+                    results.append(
+                        {
+                            "time": gmt8_time.timestamp(),
+                            "open": rate["open"],
+                            "high": rate["high"],
+                            "low": rate["low"],
+                            "close": rate["close"],
+                            "tick_volume": rate["tick_volume"],
+                        }
+                    )
+            else:
+                error = mt5.last_error()  # type: ignore
+                print(f"MT5 error ({error}): {mt5.error_description(error)}")  # type: ignore
+            current_start = current_end + timedelta(seconds=1)
+            time.sleep(0.1)
+
+        return results
 
     def add_order(self, direction, volume, sl, tp, comment="None"):
         trade_type = mt5.ORDER_TYPE_BUY if direction == 1 else mt5.ORDER_TYPE_SELL
