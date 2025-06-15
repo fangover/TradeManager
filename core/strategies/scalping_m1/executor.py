@@ -3,6 +3,7 @@ import MetaTrader5 as mt5
 from config.settings import Settings
 from core.application.state import TradingState
 from core.infrastructure.brokers.base import BaseBroker
+from core.infrastructure.candle import CandlePlotter
 from core.infrastructure.risk import RiskCalculator
 from core.strategies.base import BaseExecutor
 from models import Position

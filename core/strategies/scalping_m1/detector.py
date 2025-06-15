@@ -1,9 +1,12 @@
+from datetime import datetime, timedelta, timezone
+
 import MetaTrader5 as mt5
 import numpy as np
 
 from config.settings import Settings
 from core.application.state import TradingState
 from core.infrastructure.brokers.base import BaseBroker
+from core.infrastructure.candle import CandlePlotter
 from core.strategies.base import BaseDetector
 from core.utilities.logger import logger
 from models import Candle
@@ -15,6 +18,7 @@ class ScalpingDetector(BaseDetector):
         self.state = state
         self.config = config
         self.prev_rsi = None
+        self.gmt_plus_8 = timezone(timedelta(hours=8))
 
     def detect(self):
         candles: list[Candle] = self.state.get_candles(mt5.TIMEFRAME_M1, 30)
@@ -68,20 +72,30 @@ class ScalpingDetector(BaseDetector):
 
         self.prev_rsi = current_rsi
 
-        # Generate and log signals
+        signal = 0
         if long_condition:
             logger.info(
                 "LONG signal generated. Conditions: trend UP crossover, price above EMA Fast, RSI in [50-70]"
             )
-            return 1
+            signal = 1
         elif short_condition:
             logger.info(
                 "SHORT signal generated. Conditions: trend DOWN crossover, price below EMA Fast, RSI in [30-50]"
             )
-            return -1
+            signal = -1
+        else:
+            print("No trading signal detected")
 
-        print("No trading signal detected")
-        return 0
+        if signal in [-1, 1]:
+            tick = self.broker.get_tick()
+            if not tick:
+                return False
+            price = tick.ask if signal == 1 else tick.bid
+            date_str = datetime.now(self.gmt_plus_8).strftime("%Y-%m-%d_%H-%M-%S")
+            plotter = CandlePlotter(f"M1 Scalper {date_str}").add_horizontal_line(price)
+            plotter.plot_and_save(candles, f"M1_Scalper_{date_str}")
+
+        return signal
 
     def _ema(self, prices, period):
         weights = np.exp(np.linspace(0, -1, period))

@@ -5,7 +5,7 @@ from datetime import datetime
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from core.infrastructure.candle import CandlestickPatterns, plotter
+from core.infrastructure.candle import CandlePlotter, CandlestickPatterns
 from models import Candle
 
 
@@ -36,7 +36,8 @@ class TestCandlestickPatterns(unittest.TestCase):
         )
         candles = [candle1, candle2]
         self.assertTrue(CandlestickPatterns.is_bullish_engulfing(candles))
-        plotter.plot_candles(candles, "Bullish Engulfing")
+        plotter = CandlePlotter(title="Bullish Engulfing")
+        plotter.plot(candles)
 
     def test_bearish_engulfing(self):
         candle1 = Candle(
@@ -59,7 +60,8 @@ class TestCandlestickPatterns(unittest.TestCase):
         )
         candles = [candle1, candle2]
         self.assertTrue(CandlestickPatterns.is_bearish_engulfing(candles))
-        plotter.plot_candles(candles, "Bearish Engulfing")
+        plotter = CandlePlotter(title="Bearish Engulfing")
+        plotter.plot(candles)
 
     def test_hammer(self):
         # Invalid hammer (upper shadow too big)
@@ -85,7 +87,8 @@ class TestCandlestickPatterns(unittest.TestCase):
             timeframe="1h",
         )
         self.assertTrue(CandlestickPatterns.is_hammer([candle]))
-        plotter.plot_candles([candle], "Hammer")
+        plotter = CandlePlotter(title="Hammer")
+        plotter.plot([candle])
 
     def test_morning_star(self):
         candle1 = Candle(
@@ -118,7 +121,8 @@ class TestCandlestickPatterns(unittest.TestCase):
 
         candles = [candle1, candle2, candle3]
         self.assertTrue(CandlestickPatterns.is_morning_star(candles))
-        plotter.plot_candles(candles, "Morning Star")
+        plotter = CandlePlotter(title="Morning Star")
+        plotter.plot(candles)
 
     def test_doji(self):
         candle = Candle(
@@ -131,7 +135,8 @@ class TestCandlestickPatterns(unittest.TestCase):
             timeframe="1h",
         )
         self.assertTrue(CandlestickPatterns.is_doji([candle]))
-        plotter.plot_candles([candle], "Doji")
+        plotter = CandlePlotter(title="Doji")
+        plotter.plot([candle])
 
     def test_hanging_man(self):
         # Valid hanging man
@@ -144,8 +149,9 @@ class TestCandlestickPatterns(unittest.TestCase):
             volume=1200,
             timeframe="1h",
         )
-        plotter.plot_candles([candle], "Hanging Man")
         self.assertTrue(CandlestickPatterns.is_hanging_man([candle]))
+        plotter = CandlePlotter(title="Hanging Man")
+        plotter.plot([candle])
 
     def test_inverted_hammer(self):
         # Valid inverted hammer
@@ -159,7 +165,8 @@ class TestCandlestickPatterns(unittest.TestCase):
             timeframe="1h",
         )
         self.assertTrue(CandlestickPatterns.is_inverted_hammer([candle]))
-        plotter.plot_candles([candle], "Inverted Hammer")
+        plotter = CandlePlotter(title="Inverted Hammer")
+        plotter.plot([candle])
 
     def test_tweezer_bottom(self):
         # Valid tweezer bottom
@@ -183,7 +190,8 @@ class TestCandlestickPatterns(unittest.TestCase):
         )
         candles = [candle1, candle2]
         self.assertTrue(CandlestickPatterns.is_tweezer_bottom(candles))
-        plotter.plot_candles(candles, "Tweezer Bottom")
+        plotter = CandlePlotter(title="Tweezer Bottom")
+        plotter.plot(candles)
 
     def test_tweezer_top(self):
         # Valid tweezer top
@@ -207,7 +215,8 @@ class TestCandlestickPatterns(unittest.TestCase):
         )
         candles = [candle1, candle2]
         self.assertTrue(CandlestickPatterns.is_tweezer_top(candles))
-        plotter.plot_candles(candles, "Tweezer Top")
+        plotter = CandlePlotter(title="Tweezer Top")
+        plotter.plot(candles)
 
     def test_three_white_soldiers(self):
         # Valid three white soldiers
@@ -240,7 +249,8 @@ class TestCandlestickPatterns(unittest.TestCase):
         )
         candles = [candle1, candle2, candle3]
         self.assertTrue(CandlestickPatterns.is_three_white_soldiers(candles))
-        plotter.plot_candles(candles, "Three White Soldiers")
+        plotter = CandlePlotter(title="Three White Soldiers")
+        plotter.plot(candles)
 
     def test_three_black_crows(self):
         # Valid three black crows
@@ -273,10 +283,10 @@ class TestCandlestickPatterns(unittest.TestCase):
         )
         candles = [candle1, candle2, candle3]
         self.assertTrue(CandlestickPatterns.is_three_black_crows(candles))
-        plotter.plot_candles(candles, "Three Black Crows")
+        plotter = CandlePlotter(title="Three Black Crows")
+        plotter.plot(candles)
 
     def test_invalid_patterns(self):
-        # Test invalid patterns that shouldn't trigger detection
         candle = Candle(
             timestamp=to_unix("2023-02-01"),
             open=100,
@@ -286,16 +296,10 @@ class TestCandlestickPatterns(unittest.TestCase):
             volume=1000,
             timeframe="1h",
         )
-        # Should not be a hammer
+
         self.assertFalse(CandlestickPatterns.is_hammer([candle]))
-
-        # Should not be a doji
         self.assertFalse(CandlestickPatterns.is_doji([candle]))
-
-        # Should not be a hanging man
         self.assertFalse(CandlestickPatterns.is_hanging_man([candle]))
-
-        # Single candle shouldn't be any pattern that requires multiple candles
         self.assertFalse(CandlestickPatterns.is_bullish_engulfing([candle]))
         self.assertFalse(CandlestickPatterns.is_morning_star([candle]))
         self.assertFalse(CandlestickPatterns.is_three_white_soldiers([candle]))
