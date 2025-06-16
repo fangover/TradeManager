@@ -10,4 +10,4 @@ class RiskCalculator:
         risk_per_lot = stop_loss_pips * pip_value
         size = risk_amount / risk_per_lot
         size = round(max(min_lot_size, min(size, max_lot_size)), 2)
-        return size
+        return float(size)

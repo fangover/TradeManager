@@ -51,16 +51,16 @@ class ScalpingExecutor(BaseExecutor):
             volume=size,
             sl=stop_loss,
             tp=take_profit,
-            comment="SCALP",
+            comment="M1 SCALP",
         )
 
         if order:
             self.state.position_manager.add_position(
                 Position(
-                    id=order.ticket,
+                    id=order.order,
                     symbol=self.config.SYMBOL,
                     direction=direction,
-                    entry_price=price,
+                    entry_price=float(order.price),
                     stop_loss=stop_loss,
                     take_profit=take_profit,
                     size=size,

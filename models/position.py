@@ -24,7 +24,7 @@ class Position:
         self.pip_point = pip_point
         self.time_out = time_out
         self.entry_time = time.time()
-        self.current_price_ask = entry_price
+        self.current_price = entry_price
         self.close_price = None
         self.close_time = None
         self.close_reason = None

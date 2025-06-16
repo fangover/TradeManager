@@ -21,6 +21,10 @@ class ScalpingDetector(BaseDetector):
         self.gmt_plus_8 = timezone(timedelta(hours=8))
 
     def detect(self):
+
+        if self.broker.has_positions_by_comment("M1 SCALP"):
+            return 0
+
         candles: list[Candle] = self.state.get_candles(mt5.TIMEFRAME_M1, 30)
 
         if len(candles) < 30:
@@ -85,7 +89,7 @@ class ScalpingDetector(BaseDetector):
             signal = -1
         else:
             print("No trading signal detected")
-
+        signal = 1
         if signal in [-1, 1]:
             tick = self.broker.get_tick()
             if not tick:
@@ -93,7 +97,8 @@ class ScalpingDetector(BaseDetector):
             price = tick.ask if signal == 1 else tick.bid
             date_str = datetime.now(self.gmt_plus_8).strftime("%Y-%m-%d_%H-%M-%S")
             plotter = CandlePlotter(f"M1 Scalper {date_str}").add_horizontal_line(price)
-            plotter.plot_and_save(candles, f"M1_Scalper_{date_str}")
+            direction_str = "LONG" if signal else "SHORT"
+            plotter.plot_and_save(candles, f"M1_Scalper_{direction_str}_{date_str}")
 
         return signal
 

@@ -75,7 +75,7 @@ class MT5Client(BaseBroker):
                     )
             else:
                 error = mt5.last_error()  # type: ignore
-                print(f"MT5 error ({error}): {mt5.error_description(error)}")  # type: ignore
+                print(f"MT5 error ({error})")  # type: ignore
             current_start = current_end + timedelta(seconds=1)
             time.sleep(0.1)
 
@@ -116,9 +116,10 @@ class MT5Client(BaseBroker):
                 ]:
                     break
             else:
-                logging.error(f"Error order send: Empty result")
-                break
-            time.sleep(0.5)
+                error = mt5.last_error()  # type: ignore
+                self.logger.error(f"Order failed: {error}")  # type: ignore
+                return None
+                time.sleep(0.5)
         return None
 
     def modify_position(self, position_id, new_sl, new_tp):
@@ -225,3 +226,23 @@ class MT5Client(BaseBroker):
             ):
                 return True
         return False
+
+    def get_positions_by_comment(self, comment, symbol=None, magic=None):
+        if magic is None:
+            magic = self.config.MAGIC_NUMBER
+        if symbol is None:
+            symbol = self.config.SYMBOL
+
+        try:
+            positions = mt5.positions_get(symbol=symbol, magic=magic)  # type: ignore
+            if positions is None:
+                return []
+            return [pos for pos in positions if pos.comment == comment]
+
+        except Exception as e:
+            self.logger.error(f"Error getting positions by comment: {e}")
+            return []
+
+    def has_positions_by_comment(self, comment, symbol=None, magic=None):
+        positions = self.get_positions_by_comment(comment, symbol, magic)
+        return len(positions) > 0
