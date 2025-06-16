@@ -89,7 +89,7 @@ class ScalpingDetector(BaseDetector):
             signal = -1
         else:
             print("No trading signal detected")
-        signal = 1
+
         if signal in [-1, 1]:
             tick = self.broker.get_tick()
             if not tick:
