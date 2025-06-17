@@ -32,7 +32,7 @@ class RiskManager:
             print(
                 f"Position #{position.id} | Type: {'BUY' if position.direction == 1 else 'SELL'} | "
                 f"Open: {position.entry_price:.2f} | Current: {position.current_price:.2f} | Size: {position.size:.2f} | "
-                f"Profit: ${position.unrealized_pnl:.2f} | Pips: {position.unrealized_pnl_pips:.1f}"
+                f"Profit: ${position.unrealized_pnl:.2f} | Pips: {position.unrealized_pnl_pips:.1f} | Reason: {position.comment}"
             )
 
             # TODO better refine risk management. Hold till TP/SL for now.

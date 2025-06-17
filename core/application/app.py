@@ -43,6 +43,14 @@ class TradeApp:
             duration_minutes=0,  # Run continuously
         )
 
+        self.strategies.load(
+            "M1 Scalping RM",
+            ScalpingDetector(self.broker, self.state, config),
+            ScalpingExecutor(self.broker, self.state, config),
+            schedule_config={"type": "interval", "seconds": 10},
+            duration_minutes=0,  # Run continuously
+        )
+
         self.risk = RiskManager(
             self.broker, self.state, config, self.bus, ["M1 Scalping"]
         )

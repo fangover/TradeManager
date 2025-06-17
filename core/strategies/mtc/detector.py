@@ -163,12 +163,3 @@ class MajorTrendConfidenceDetector(BaseDetector):
             mt5.TIMEFRAME_H1: 90,
         }
         return min(max_bars.get(timeframe, 60), max(10, base_bars))
-
-    def _calculate_position_size(self, confidence):
-        if confidence >= 0.85:
-            return 65  # Max conviction sizing
-        elif confidence >= 0.70:
-            return 40
-        elif confidence >= 0.60:
-            return 25
-        return 0  # No trade below 60% confidence
