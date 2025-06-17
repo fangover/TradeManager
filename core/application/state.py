@@ -21,7 +21,7 @@ class TradingState:
         self.account_balance = balance
         self.account_equity = equity
 
-    def initializ(self):
+    def initialize(self):
         self.update_account_info()
         self.candle_manager.initialize_all()
 
@@ -29,8 +29,8 @@ class TradingState:
     def get_candles(self, timeframe, count=None):
         return self.candle_manager.get_candles(timeframe, count)
 
-    def calculate_atr(self, timeframe, period=14, smoothing_period=None):
-        return self.candle_manager.calculate_atr(timeframe, period, smoothing_period)
+    def calculate_atr(self, timeframe, period=14):
+        return self.candle_manager.calculate_atr(timeframe, period)
 
     def update(self):
         self.update_account_info()

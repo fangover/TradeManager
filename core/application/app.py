@@ -24,7 +24,7 @@ class TradeApp:
         self.position_logger = PositionLogger()
         self.bus.subscribe("LOG_POSITION", self.position_logger.log_position)
 
-        self.state.initializ()
+        self.state.initialize()
 
         # Load in strategies
         self.strategies = StrategyRegistry()

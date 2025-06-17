@@ -36,11 +36,7 @@ class MajorTrendConfidenceDetector(BaseDetector):
             bars = self._calculate_realized_vol_bars(tf)
             trend, conf = self._confirm_trend_with_quantile(tf, bars)
 
-            if tf == mt5.TIMEFRAME_H1 and self._in_chop_zone(tf):
-                conf *= 0.4
-                reason_parts.append(f"{tf_name}↓{conf:.1f}")
-            else:
-                reason_parts.append(f"{tf_name}{'↑' if trend>0 else '↓'}{conf:.1f}")
+            reason_parts.append(f"{tf_name}{'↑' if trend>0 else '↓'}{conf:.1f}")
 
             weighted_sum += trend * conf * weight
 
@@ -167,11 +163,6 @@ class MajorTrendConfidenceDetector(BaseDetector):
             mt5.TIMEFRAME_H1: 90,
         }
         return min(max_bars.get(timeframe, 60), max(10, base_bars))
-
-    def _in_chop_zone(self, timeframe):
-        short_atr = self.state.calculate_atr(timeframe, 14, 14)
-        long_atr = self.state.calculate_atr(timeframe, 14, 30)
-        return short_atr < 0.5 * long_atr if (short_atr and long_atr) else False
 
     def _calculate_position_size(self, confidence):
         if confidence >= 0.85:

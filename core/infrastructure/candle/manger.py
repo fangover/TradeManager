@@ -5,6 +5,7 @@ import MetaTrader5 as mt5
 import numpy as np
 
 from core.infrastructure.brokers.base import BaseBroker
+from core.utilities.logger import logger
 from models import Candle
 
 
@@ -62,7 +63,7 @@ class CandleManager:
                             timeframe=timeframe,
                         )
                     )
-            print(
+            logger.debug(
                 f"Initialized {self.timeframe_text.get(timeframe, timeframe)} "
                 f"with {len(candles)} candles "  # type: ignore
                 f"in {time.time() - start:.2f}s"
@@ -151,38 +152,20 @@ class CandleManager:
                 )
             )
 
-    def calculate_atr(
-        self, timeframe: int, lookback_period: int, smoothing_period=None
-    ):
+    def calculate_atr(self, timeframe: int, lookback_period: int) -> float:
         candles = self.get_candles(timeframe, lookback_period + 1)
-        if not candles or len(candles) < lookback_period:
+        if not candles or len(candles) < lookback_period + 1:
             return 0.0
 
         true_ranges = []
         for i in range(1, len(candles)):
-            high, low, prev_close = (
-                candles[i].high,
-                candles[i].low,
-                candles[i - 1].close,
-            )
+            high = candles[i].high
+            low = candles[i].low
+            prev_close = candles[i - 1].close
             tr = max(high - low, abs(high - prev_close), abs(low - prev_close))
             true_ranges.append(tr)
 
-        if smoothing_period:
-            weights = np.exp(np.linspace(0, -1, smoothing_period))
-            weights /= weights.sum()
-            atr = np.convolve(true_ranges[-smoothing_period:], weights, mode="valid")[0]
-        else:
-            # Simple moving average
-            atr = np.mean(true_ranges[-lookback_period:])
-
-        recent_vol = np.std(
-            [c.close for c in candles[-20:]]
-        )  # 20-period close volatility
-        long_term_vol = np.std([c.close for c in candles])
-        volatility_ratio = recent_vol / (long_term_vol + 1e-10)
-
-        return atr * (0.5 + 0.5 * volatility_ratio)
+        return float(np.mean(true_ranges)) if true_ranges else 0.0
 
     def calculate_volatility(self, timeframe):
         candles = list(self.candle_cache[timeframe])

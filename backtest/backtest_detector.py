@@ -36,8 +36,8 @@ class BacktestState:
     def get_candles(self, timeframe, count=None):
         return self.candle_manager.get_candles(timeframe, count)
 
-    def calculate_atr(self, timeframe, period=14, smoothing_period=None):
-        return self.candle_manager.calculate_atr(timeframe, period, smoothing_period)
+    def calculate_atr(self, timeframe, period=14):
+        return self.candle_manager.calculate_atr(timeframe, period)
 
 
 class BacktestRunner:

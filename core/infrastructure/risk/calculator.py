@@ -11,3 +11,11 @@ class RiskCalculator:
         size = risk_amount / risk_per_lot
         size = round(max(min_lot_size, min(size, max_lot_size)), 2)
         return float(size)
+
+    @staticmethod
+    def stop_loss(price: float, direction: int, sl_distance: float):
+        return price - (direction * sl_distance)
+
+    @staticmethod
+    def take_profit(price: float, direction: int, tp_distance: float):
+        return price + (direction * tp_distance)

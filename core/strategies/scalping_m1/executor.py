@@ -11,39 +11,18 @@ from models import Position
 
 class ScalpingExecutor(BaseExecutor):
     def __init__(self, broker: BaseBroker, state: TradingState, config: Settings):
-        self.broker = broker
-        self.state = state
-        self.config = config
-        self.max_trades = 3  # Max simultaneous trades
+        super().__init__(broker, state, config)
         self.trade_duration = 180  # 3 minutes
 
     def execute(self, name, direction):
-        if len(self.state.position_manager.open_positions) >= self.max_trades:
-            return False
-
-        tick = self.broker.get_tick()
-        if not tick:
-            return False
-
-        price = tick.ask if direction == 1 else tick.bid
-
+        price = self._price(direction)
         atr = self.state.candle_manager.calculate_atr(mt5.TIMEFRAME_M1, 14)
-        pip_value = self.broker.get_pip_value()
-
         sl_distance = atr * 1.5
         tp_distance = atr * 3
 
-        stop_loss = price - (direction * sl_distance)
-        take_profit = price + (direction * tp_distance)
-
-        size = RiskCalculator.position_size(
-            self.state.account_balance,
-            sl_distance,
-            self.config.RISK_PER_TRADE * 0.5,  # Half normal risk
-            pip_value * 10,
-            self.config.MIN_LOT_SIZE,
-            self.config.MAX_LOT_SIZE,
-        )
+        stop_loss = self._calculate_stop_loss(price, direction, sl_distance)
+        take_profit = self._calculate_take_profit(price, direction, tp_distance)
+        size = self._calculate_volume(sl_distance, self.config.RISK_PER_TRADE * 0.5)
 
         # Execute trade
         order = self.broker.add_order(
@@ -64,7 +43,7 @@ class ScalpingExecutor(BaseExecutor):
                     stop_loss=stop_loss,
                     take_profit=take_profit,
                     size=size,
-                    pip_point=pip_value,
+                    pip_point=self.broker.get_pip_value(),
                     time_out=self.trade_duration,  # Auto-close after 3 minutes
                     comment=name,
                 )
