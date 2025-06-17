@@ -10,8 +10,6 @@ from core.utilities.logger import logger
 
 
 class Strategy:
-    """A trading strategy combining detection and execution logic."""
-
     def __init__(
         self,
         name: str,
@@ -20,16 +18,7 @@ class Strategy:
         schedule_config: Dict[str, Any] = None,  # type: ignore
         duration_minutes: Optional[int] = None,
     ) -> None:
-        """Initialize the strategy.
-
-        Args:
-            name: Strategy identifier
-            detector: Detection logic component
-            executor: Execution logic component
-            schedule_config: Scheduling configuration
-            duration_minutes: Optional runtime limit in minutes
-        """
-        self.name = name
+        self.name = name[:16]  # prevent long text, Important!
         self.detector = detector
         self.executor = executor
         self.bus = event_bus
@@ -38,34 +27,41 @@ class Strategy:
         self.start_time = datetime.now()
 
     def should_stop(self) -> bool:
-        """Check if strategy should stop based on duration limit."""
         if self.duration_minutes is None or self.duration_minutes == 0:
             return False
         elapsed = datetime.now() - self.start_time
         return elapsed >= timedelta(minutes=self.duration_minutes)
 
     def run(self) -> Optional[schedule.CancelJob]:
-        """Execute the strategy's detection and execution logic."""
-        start = time.time()
+        start_time = time.time()
 
         if self.should_stop():
             return schedule.CancelJob  # type: ignore
 
-        logger.info(f"Detecting {self.name} strategy")
-        direction = self.detector.detect()
+        direction, reason = self.detector.detect(self.name)
         if direction in (-1, 1):
-            logger.info(f"Executing {self.name} strategy")
-            self.executor.execute(direction)
+            try:
+                self.executor.execute(self.name, direction)
+                execution_time = time.time() - start_time
 
-        print(f"Run {self.name} strategy in {time.time() - start:.2f}s")
+                logger.info(
+                    f"Successfully executed {self.name} strategy | "
+                    f"Direction: {'LONG' if direction == 1 else 'SHORT'} | "
+                    f"Execution time: {execution_time:.2f}s | "
+                    f"Signal reason: {reason}"
+                )
+            except Exception as e:
+                logger.error(
+                    f"Failed to execute {self.name} strategy | "
+                    f"Direction: {'LONG' if direction == 1 else 'SHORT'} | "
+                    f"Error: {str(e)} | "
+                    f"Original signal reason: {reason}"
+                )
         return None
 
 
 class StrategyRegistry:
-    """Manages registration and scheduling of trading strategies."""
-
     def __init__(self) -> None:
-        """Initialize the registry."""
         self.strategies = []
         self.default_strategy = None
 
@@ -77,18 +73,6 @@ class StrategyRegistry:
         schedule_config: Dict[str, Any] = None,  # type: ignore
         duration_minutes: Optional[int] = None,
     ) -> "StrategyRegistry":
-        """Load and schedule a strategy.
-
-        Args:
-            name: Strategy identifier
-            detector: Detection logic component
-            executor: Execution logic component
-            schedule_config: Scheduling configuration
-            duration_minutes: Optional runtime limit in minutes
-
-        Returns:
-            StrategyRegistry: self for method chaining
-        """
         strategy = Strategy(name, detector, executor, schedule_config, duration_minutes)
         self.strategies.append(strategy)
 
@@ -102,11 +86,6 @@ class StrategyRegistry:
         return self
 
     def _schedule_strategy(self, strategy: Strategy) -> None:
-        """Internal method to schedule a strategy.
-
-        Args:
-            strategy: Strategy instance to schedule
-        """
         cfg = strategy.schedule
 
         if cfg["type"] == "interval":
@@ -120,10 +99,8 @@ class StrategyRegistry:
             schedule.every().hour.at(at_time).do(strategy.run)
 
     def run_all(self) -> None:
-        """Run all registered strategies immediately."""
         for strategy in self.strategies:
             strategy.run()
 
     def run_pending(self) -> None:
-        """Run all pending scheduled tasks."""
         schedule.run_pending()

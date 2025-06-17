@@ -40,6 +40,7 @@ class PositionManager:
                             size=pos.volume,
                             pip_point=self.broker.get_pip_value(),
                             time_out=0,
+                            comment="External position",
                         )
                     )
 

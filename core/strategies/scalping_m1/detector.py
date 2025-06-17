@@ -20,29 +20,20 @@ class ScalpingDetector(BaseDetector):
         self.prev_rsi = None
         self.gmt_plus_8 = timezone(timedelta(hours=8))
 
-    def detect(self):
-
-        if self.broker.has_positions_by_comment("M1 SCALP"):
-            return 0
+    def detect(self, name):
+        if self.broker.has_positions_by_comment(name):
+            return 0, f"Existing position found for {name}, skipping new signal"
 
         candles: list[Candle] = self.state.get_candles(mt5.TIMEFRAME_M1, 30)
 
         if len(candles) < 30:
-            logger.warning(
-                f"Insufficient candles: {len(candles)}/30, skipping detection"
-            )
-            return 0
+            return 0, f"Insufficient candles: {len(candles)}/30, skipping detection"
 
         closes = np.array([candle.close for candle in candles])
 
         ema_fast = self._ema(closes, 5)
         ema_slow = self._ema(closes, 13)
         rsi = self._rsi(closes, 14)
-
-        # Log indicator values
-        print(f"    Last 3 EMA Fast: {ema_fast[-3:]}")
-        print(f"    Last 3 EMA Slow: {ema_slow[-3:]}")
-        print(f"    Last 3 RSI: {rsi[-3:]}")
 
         current_close = closes[-1]
         current_rsi = rsi[-1]
@@ -53,11 +44,6 @@ class ScalpingDetector(BaseDetector):
 
         trend_up = current_fast > current_slow and prev_fast <= prev_slow
         trend_down = current_fast < current_slow and prev_fast >= prev_slow
-
-        # Log trend conditions
-        print(f"    Trend UP: {trend_up}, Trend DOWN: {trend_down}")
-        print(f"    Close vs EMA Fast: {current_close > current_fast}")
-        print(f"    Prev RSI: {self.prev_rsi}, Current RSI: {current_rsi}")
 
         # Entry conditions
         long_condition = (
@@ -77,30 +63,35 @@ class ScalpingDetector(BaseDetector):
         self.prev_rsi = current_rsi
 
         signal = 0
+        reason = ""
         if long_condition:
-            logger.info(
-                "LONG signal generated. Conditions: trend UP crossover, price above EMA Fast, RSI in [50-70]"
-            )
+            reason = "LONG signal generated. Conditions: trend UP crossover, price above EMA Fast, RSI in [50-70]"
             signal = 1
         elif short_condition:
-            logger.info(
-                "SHORT signal generated. Conditions: trend DOWN crossover, price below EMA Fast, RSI in [30-50]"
-            )
+            reason = "SHORT signal generated. Conditions: trend DOWN crossover, price below EMA Fast, RSI in [30-50]"
             signal = -1
-        else:
-            print("No trading signal detected")
 
-        if signal in [-1, 1]:
+        if signal == 0:
+            return signal, "No trading conditions met"
+
+        try:
             tick = self.broker.get_tick()
             if not tick:
-                return False
-            price = tick.ask if signal == 1 else tick.bid
-            date_str = datetime.now(self.gmt_plus_8).strftime("%Y-%m-%d_%H-%M-%S")
-            plotter = CandlePlotter(f"M1 Scalper {date_str}").add_horizontal_line(price)
-            direction_str = "LONG" if signal else "SHORT"
-            plotter.plot_and_save(candles, f"M1_Scalper_{direction_str}_{date_str}")
+                return 0, "Broker tick data unavailable"
 
-        return signal
+            current_time = datetime.now(self.gmt_plus_8)
+            date_str = current_time.strftime("%Y-%m-%d_%H-%M-%S")
+            direction = "LONG" if signal > 0 else "SHORT"
+
+            plot_title = f"{name} {direction} Signal {date_str}"
+            filename = f"{name}_{direction}_{date_str}"
+            plotter = CandlePlotter(plot_title)
+            plotter.plot_and_save(candles, filename)
+
+            return signal, reason
+
+        except Exception as e:
+            return 0, f"Signal processing failed: {str(e)}"
 
     def _ema(self, prices, period):
         weights = np.exp(np.linspace(0, -1, period))

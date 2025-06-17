@@ -13,6 +13,7 @@ class Position:
         size,
         pip_point,
         time_out,
+        comment,
     ):
         self.id = id
         self.symbol = symbol
@@ -28,6 +29,7 @@ class Position:
         self.close_price = None
         self.close_time = None
         self.close_reason = None
+        self.comment = comment
 
     def update_mark_price(self, price):
         self.current_price = price

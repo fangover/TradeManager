@@ -18,53 +18,52 @@ class MajorTrendConfidenceDetector(BaseDetector):
         self.config = config
         self.gamma_threshold = 0.85
 
-    def detect(self):
-        timeframe_weights = {
-            mt5.TIMEFRAME_D1: 7.0,
-            mt5.TIMEFRAME_H4: 4.0,
-            mt5.TIMEFRAME_H1: 2.0,
+    def detect(self, name):
+        if self.broker.has_positions_by_comment(name):
+            return 0, f"Existing position found for {name}, skipping new signal"
+
+        tf_analysis = {
+            mt5.TIMEFRAME_D1: (7.0, "D1"),
+            mt5.TIMEFRAME_H4: (4.0, "H4"),
+            mt5.TIMEFRAME_H1: (2.0, "H1"),
         }
 
-        print("    === Multi-Timeframe Trend Analysis ===")
-        daily_bars = self._calculate_realized_vol_bars(mt5.TIMEFRAME_D1)
-        h4_bars = self._calculate_realized_vol_bars(mt5.TIMEFRAME_H4)
-        h1_bars = self._calculate_realized_vol_bars(mt5.TIMEFRAME_H1)
+        weighted_sum = 0
+        total_weight = sum(w for w, _ in tf_analysis.values())
+        reason_parts = []
 
-        daily_trend, daily_trend_conf = self._confirm_trend_with_quantile(
-            mt5.TIMEFRAME_D1, daily_bars
-        )
-        h4_trend, h4_trend_conf = self._confirm_trend_with_quantile(
-            mt5.TIMEFRAME_H4, h4_bars
-        )
-        h1_trend, h1_trend_conf = self._confirm_trend_with_quantile(
-            mt5.TIMEFRAME_H1, h1_bars
-        )
+        for tf, (weight, tf_name) in tf_analysis.items():
+            bars = self._calculate_realized_vol_bars(tf)
+            trend, conf = self._confirm_trend_with_quantile(tf, bars)
 
-        if self._in_chop_zone(mt5.TIMEFRAME_H1):
-            h1_trend_conf *= 0.4  # Nerf retail timeframe in chop
-            print("    CHOP ZONE PENALTY APPLIED - H1 CONFIDENCE REDUCED")
+            if tf == mt5.TIMEFRAME_H1 and self._in_chop_zone(tf):
+                conf *= 0.4
+                reason_parts.append(f"{tf_name}↓{conf:.1f}")
+            else:
+                reason_parts.append(f"{tf_name}{'↑' if trend>0 else '↓'}{conf:.1f}")
 
-        weighted_trends = [
-            daily_trend * daily_trend_conf * timeframe_weights[mt5.TIMEFRAME_D1],
-            h4_trend * h4_trend_conf * timeframe_weights[mt5.TIMEFRAME_H4],
-            h1_trend * h1_trend_conf * timeframe_weights[mt5.TIMEFRAME_H1],
-        ]
+            weighted_sum += trend * conf * weight
 
-        total_weight = sum(timeframe_weights.values())
-        composite_trend = sum(weighted_trends) / total_weight
-        composite_confidence = abs(composite_trend)
+        composite = weighted_sum / total_weight
+        abs_conf = abs(composite)
 
-        final_direction = (
-            1 if composite_trend > 0 else (-1 if composite_trend < 0 else 0)
-        )
-
-        print(
-            f"    FINAL TREND: {self.state._trend_to_text(final_direction)} "
-            f"| CONFIDENCE: {composite_confidence * 100:.0f}% "
-            f"| CAPITAL ALLOC: {self._calculate_position_size(composite_confidence)}%"
-        )
-
-        return (final_direction, composite_confidence)
+        if composite > 0:
+            strength = (
+                "STRONG" if abs_conf > 0.7 else "MOD" if abs_conf > 0.4 else "WEAK"
+            )
+            return (
+                1,
+                f"LONG {strength} | {' '.join(reason_parts)} | Score:{composite:.2f}",
+            )
+        elif composite < 0:
+            strength = (
+                "STRONG" if abs_conf > 0.7 else "MOD" if abs_conf > 0.4 else "WEAK"
+            )
+            return (
+                -1,
+                f"SHORT {strength} | {' '.join(reason_parts)} | Score:{composite:.2f}",
+            )
+        return 0, f"NEUTRAL | {' '.join(reason_parts)}"
 
     def _confirm_trend_with_quantile(self, timeframe, bar_count):
         if bar_count < 3:
@@ -111,14 +110,14 @@ class MajorTrendConfidenceDetector(BaseDetector):
         )
         conf = min(conf, 1.0)
 
-        tf_text = self.state._timeframe_to_text(timeframe)
-        print(
-            f"    ({tf_text}) → Trend: {self.state._trend_to_text(trend)} "
-            f"| Confidence: {conf*100:.0f}% "
-            f"| Slope: {slope:.5f} "
-            f"| TVWAP Δ: {price_deviation*100:.2f}% "
-            f"| Lookback: {bar_count}"
-        )
+        # tf_text = self.state._timeframe_to_text(timeframe)
+        # print(
+        #     f"    ({tf_text}) → Trend: {self.state._trend_to_text(trend)} "
+        #     f"| Confidence: {conf*100:.0f}% "
+        #     f"| Slope: {slope:.5f} "
+        #     f"| TVWAP Δ: {price_deviation*100:.2f}% "
+        #     f"| Lookback: {bar_count}"
+        # )
 
         return (trend, conf)
 

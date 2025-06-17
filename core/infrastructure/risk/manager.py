@@ -8,12 +8,18 @@ from models import Position
 
 class RiskManager:
     def __init__(
-        self, broker: BaseBroker, state: TradingState, config: Settings, bus: EventBus
+        self,
+        broker: BaseBroker,
+        state: TradingState,
+        config: Settings,
+        bus: EventBus,
+        skip_monitor_position: list[str],
     ):
         self.broker = broker
         self.state = state
         self.config = config
         self.bus = bus
+        self.skip_monitor_position = skip_monitor_position
 
     def evaluate(self):
         self.monitor_positions()
@@ -28,6 +34,11 @@ class RiskManager:
                 f"Open: {position.entry_price:.2f} | Current: {position.current_price:.2f} | Size: {position.size:.2f} | "
                 f"Profit: ${position.unrealized_pnl:.2f} | Pips: {position.unrealized_pnl_pips:.1f}"
             )
+
+            # TODO better refine risk management. Hold till TP/SL for now.
+            if position.comment in self.skip_monitor_position:
+                continue
+
             self.check_position_risk(position)
 
     def check_position_risk(self, position: Position):

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 import MetaTrader5 as mt5
 
 from config.settings import Settings
+from core.utilities.logger import logger
 
 from .base import BaseBroker
 
@@ -12,12 +13,11 @@ from .base import BaseBroker
 class MT5Client(BaseBroker):
     def __init__(self, config: Settings):
         self.config = config
-        self.logger = logging.getLogger("mt5")
         self.connected = False
 
     def connect(self):
         if not mt5.initialize():  # type: ignore
-            self.logger.error("MT5 initialization failed")
+            logger.error("MT5 initialization failed")
             return False
 
         if not mt5.login(  # type: ignore
@@ -25,7 +25,7 @@ class MT5Client(BaseBroker):
             self.config.BROKER_PASSWORD,
             self.config.BROKER_SERVER,
         ):
-            self.logger.error("MT5 login failed")
+            logger.error("MT5 login failed")
             return False
 
         self.connected = True
@@ -141,7 +141,7 @@ class MT5Client(BaseBroker):
             if result.retcode == mt5.TRADE_RETCODE_DONE:
                 return result
 
-            self.logger.warning(
+            logger.warning(
                 f"Attempt {attempt + 1} failed: {result.comment if result else 'No result'}"
             )
 
@@ -186,7 +186,7 @@ class MT5Client(BaseBroker):
             if account_info:
                 return account_info.balance, account_info.equity
         except Exception as e:
-            self.logger.error(f"Failed to get account info: {e}")
+            logger.error(f"Failed to get account info: {e}")
         return 0, 0
 
     def get_position_by_id(self, position_id, magic=None):
@@ -240,7 +240,7 @@ class MT5Client(BaseBroker):
             return [pos for pos in positions if pos.comment == comment]
 
         except Exception as e:
-            self.logger.error(f"Error getting positions by comment: {e}")
+            logger.error(f"Error getting positions by comment: {e}")
             return []
 
     def has_positions_by_comment(self, comment, symbol=None, magic=None):

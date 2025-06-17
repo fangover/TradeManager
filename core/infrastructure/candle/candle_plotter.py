@@ -86,7 +86,7 @@ class CandlePlotter:
         os.makedirs(output_dir, exist_ok=True)
         full_path = os.path.join(output_dir, os.path.basename(filename))
         self.fig.savefig(full_path, dpi=200, bbox_inches="tight")
-        print(f"Chart saved to {full_path}")
+        # print(f"Chart saved to {full_path}")
 
     def _to_dataframe(self, candles: list[Candle]):
         return pd.DataFrame(

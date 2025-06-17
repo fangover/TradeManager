@@ -17,7 +17,7 @@ class ScalpingExecutor(BaseExecutor):
         self.max_trades = 3  # Max simultaneous trades
         self.trade_duration = 180  # 3 minutes
 
-    def execute(self, direction):
+    def execute(self, name, direction):
         if len(self.state.position_manager.open_positions) >= self.max_trades:
             return False
 
@@ -51,7 +51,7 @@ class ScalpingExecutor(BaseExecutor):
             volume=size,
             sl=stop_loss,
             tp=take_profit,
-            comment="M1 SCALP",
+            comment=name,
         )
 
         if order:
@@ -66,6 +66,7 @@ class ScalpingExecutor(BaseExecutor):
                     size=size,
                     pip_point=pip_value,
                     time_out=self.trade_duration,  # Auto-close after 3 minutes
+                    comment=name,
                 )
             )
             return True

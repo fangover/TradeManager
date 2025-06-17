@@ -5,7 +5,6 @@ from core.application.state import TradingState
 from core.infrastructure.brokers import BrokerFactory
 from core.infrastructure.position import PositionLogger
 from core.infrastructure.risk import RiskManager
-from core.strategies.breakout import BreakoutDetector, BreakoutExecutor
 from core.strategies.loader import StrategyRegistry
 from core.strategies.mtc import (
     MajorTrendConfidenceDetector,
@@ -27,30 +26,25 @@ class TradeApp:
 
         self.state.initializ()
 
-        self.risk = RiskManager(self.broker, self.state, config, self.bus)
-
         # Load in strategies
         self.strategies = StrategyRegistry()
         self.strategies.load(
-            "Breakout",
-            BreakoutDetector(self.broker, self.state, config),
-            BreakoutExecutor(self.broker, self.state, config),
-            schedule_config={"type": "hourly", "at": ":30"},
-            duration_minutes=1,
-        )
-        self.strategies.load(
-            "Major Trend Confidence",
+            "Major Trend Conf",
             MajorTrendConfidenceDetector(self.broker, self.state, config),
             MajorTrendConfidenceExecutor(self.broker, self.state, config),
             schedule_config={"type": "hourly", "at": ":00"},
-            duration_minutes=10,
+            duration_minutes=15,
         )
         self.strategies.load(
             "M1 Scalping",
             ScalpingDetector(self.broker, self.state, config),
             ScalpingExecutor(self.broker, self.state, config),
-            schedule_config={"type": "interval", "seconds": 15},
+            schedule_config={"type": "interval", "seconds": 10},
             duration_minutes=0,  # Run continuously
+        )
+
+        self.risk = RiskManager(
+            self.broker, self.state, config, self.bus, ["M1 Scalping"]
         )
 
         # Event bindings

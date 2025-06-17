@@ -12,14 +12,16 @@ class MajorTrendConfidenceExecutor(BaseExecutor):
         self.state = state
         self.config = config
 
-    def execute(self, direction):
+    def execute(self, name, direction):
         tick = self.broker.get_tick()
         if not tick:
             return False
 
         price = tick.ask if direction == 1 else tick.bid
-        sl_distance = price * 30
         pip_value = self.broker.get_pip_value()
+
+        # TODO fix this have a better SL value!
+        sl_distance = 30 * pip_value * 10  # 30pips
 
         size = RiskCalculator.position_size(
             self.state.account_balance,
@@ -34,20 +36,22 @@ class MajorTrendConfidenceExecutor(BaseExecutor):
         take_profit = price + (self.config.TP_RATIO * sl_distance * direction)
 
         order = self.broker.add_order(
-            direction=direction, volume=size, sl=stop_loss, tp=take_profit, comment="hi"
+            direction=direction, volume=size, sl=stop_loss, tp=take_profit, comment=name
         )
+
         if order:
             self.state.position_manager.add_position(
                 Position(
-                    id=order.ticket,
+                    id=order.order,
                     symbol=self.config.SYMBOL,
                     direction=direction,
-                    entry_price=order.price,
-                    stop_loss=order.sl,
-                    take_profit=order.tp,
-                    size=order.volume,
-                    pip_point=self.broker.get_pip_value(),
+                    entry_price=float(order.price),
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
+                    size=size,
+                    pip_point=pip_value,
                     time_out=0,
+                    comment=name,
                 )
             )
             return True
