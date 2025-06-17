@@ -78,5 +78,20 @@
             },
             "group": "test"
         },
+        {
+            "label": "Run Backtest Detector",
+            "type": "shell",
+            "command": "${command:python.interpreterPath}",
+            "args": [
+                "./backtest/backtest_detector.py"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "clear": true
+            },
+            "group": "test"
+        },
     ]
 }

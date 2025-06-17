@@ -18,9 +18,12 @@ I’m building something I enjoy, not intended for real trading or financial use
 
 - **Support Multi-Strategy Detect & Execute**
   - **Strategies Included**:
-    - Breakout Detection & Execution
     - Major Trend Confidence with Quantile Regression
     - M1 Scalping based on EMA
+
+- **Back Testing**
+  - Perform historical back testing of the trading strategy to evaluate dectector performance.
+  - Display the resulting number of pips gained or lost over the tested period.
 
 - **Candlestick Pattern Detection**
   - Bullish and Bearish Engulfing
@@ -38,6 +41,13 @@ Update your config (see `settings.py` or rename `settings_example.py` to `settin
 
 ```bash
 python main.py
+```
+
+Other useful script.
+
+```bash
+python .\backtest\backtest_dector.py
+python .\testcase\test_candle_stick_patterns.py
 ```
 
 Make sure:

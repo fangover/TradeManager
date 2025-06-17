@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 from datetime import datetime, timedelta
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -10,7 +11,6 @@ import MetaTrader5 as mt5
 from config.settings import Settings
 from core.infrastructure.brokers.mt5_client import MT5Client
 from core.infrastructure.candle.manger import CandleManager
-from core.strategies.mtc.detector import MajorTrendConfidenceDetector
 from core.strategies.scalping_m1 import ScalpingDetector
 from models import Candle
 
@@ -132,11 +132,14 @@ class BacktestRunner:
                 "open_time": candle.timestamp,
             }
         )
-        print(
-            f"  Open {('LONG' if signal==1 else 'SHORT')} at {entry_price:.2f} SL {sl:.2f} TP {tp:.2f}"
-        )
+        # date_str = datetime.fromtimestamp(candle.timestamp).strftime("%Y-%m-%d")
+        # print(
+        #     f"  {date_str} Open {('LONG' if signal==1 else 'SHORT')} at {entry_price:.2f} "
+        #     f"SL {sl:.2f} TP {tp:.2f}"
+        # )
 
     def run(self, days: int = 1) -> None:
+        start_time = time.time()
         end = datetime.now()
         start = end - timedelta(days=days)
 
@@ -166,14 +169,13 @@ class BacktestRunner:
 
                 self._check_positions(candle, entry)
 
-                signal = (
-                    entry.detector.detect() if len(entry.open_positions) <= 0 else 0
+                signal, reason = (
+                    entry.detector.detect(entry.name)
+                    if len(entry.open_positions) <= 0
+                    else (0, "Position open")
                 )
+
                 if signal in [-1, 1]:
-                    date_str = datetime.fromtimestamp(candle.timestamp).strftime(
-                        "%Y-%m-%d"
-                    )
-                    print(f"{date_str}: signal={signal}")
                     self._open_position(entry, candle, signal)
 
             # Print summary per detector
@@ -189,7 +191,11 @@ class BacktestRunner:
                     f"  {close_date} {pos['result']} at {pos['close_price']:.2f} (entry {pos['entry']:.2f}) {profit:.1f} pips"
                 )
 
-            print(f"Total P/L for {entry.name}: {total_pips:.1f} pips\n")
+            execution_time = time.time() - start_time
+            print(
+                f"Total P/L for {entry.name}: {total_pips:.1f} pips | "
+                f"Execution time: {execution_time:.2f}s \n\n"
+            )
 
 
 def main():
@@ -208,7 +214,10 @@ def main():
         "M1 Scalper", ScalpingDetector(broker, state, config), mt5.TIMEFRAME_M1  # type: ignore
     )
 
-    runner.run(days=100)
+    runner.run(days=120)
+    runner.run(days=90)
+    runner.run(days=60)
+    runner.run(days=30)
 
 
 if __name__ == "__main__":
