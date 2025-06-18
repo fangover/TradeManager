@@ -25,6 +25,7 @@ class Strategy:
         self.schedule = schedule_config or {"type": "default"}
         self.duration_minutes = duration_minutes
         self.start_time = datetime.now()
+        self.enabled = True
 
     def should_stop(self) -> bool:
         if self.duration_minutes is None or self.duration_minutes == 0:
@@ -33,6 +34,9 @@ class Strategy:
         return elapsed >= timedelta(minutes=self.duration_minutes)
 
     def run(self) -> Optional[schedule.CancelJob]:
+        if not self.enabled:
+            return None
+
         start_time = time.time()
 
         if self.should_stop():

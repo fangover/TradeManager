@@ -75,7 +75,7 @@ class MT5Client(BaseBroker):
                     )
             else:
                 error = mt5.last_error()  # type: ignore
-                print(f"MT5 error ({error})")  # type: ignore
+                logger.error(f"MT5 error ({error})")  # type: ignore
             current_start = current_end + timedelta(seconds=1)
             time.sleep(0.1)
 
@@ -136,12 +136,14 @@ class MT5Client(BaseBroker):
         return None
 
     def send_order(self, request):
+
+        error_message = []
         for attempt in range(3):
             result = mt5.order_send(request)  # type: ignore
             if result.retcode == mt5.TRADE_RETCODE_DONE:
                 return result
 
-            logger.warning(
+            error_message.append(
                 f"Attempt {attempt + 1} failed: {result.comment if result else 'No result'}"
             )
 
@@ -151,6 +153,9 @@ class MT5Client(BaseBroker):
             ]:
                 break
             time.sleep(0.5)
+
+        if error_message is not None:
+            logger.error(error_message)
         return None
 
     def close_position(self, position_id):

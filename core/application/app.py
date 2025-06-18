@@ -2,6 +2,7 @@ import time
 
 from config.settings import Settings
 from core.application.state import TradingState
+from core.gui import start_position_monitor
 from core.infrastructure.brokers import BrokerFactory
 from core.infrastructure.position import PositionLogger
 from core.infrastructure.risk import RiskManager
@@ -57,6 +58,8 @@ class TradeApp:
 
         # Event bindings
         self.bus.subscribe("RISK_VIOLATION", self.on_risk_violation)
+        # GUI
+        self.gui, self.gui_thread = start_position_monitor(self.state)
 
         self.running = True
 
@@ -79,4 +82,10 @@ class TradeApp:
                 time.sleep(0.1)
 
     def shutdown(self):
+        self.running = False
+        if getattr(self, "gui", None):
+            try:
+                self.gui.on_close()
+            except Exception:
+                pass
         logger.info("TradeApp Shutdown Complete")
