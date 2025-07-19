@@ -71,7 +71,7 @@ class RiskManager:
 
         self.broker.modify_position(position.id, new_sl, position.take_profit)
         position.update_sl(new_sl)
-        logger.info(f"Trailing SL updated for position {position.id}: {new_sl}")
+        logger.info(f"Trailing SL updated for position {position.id}: {new_sl:.2f}")
 
     def circuit_breaker_check(self):
         if self.state.account_balance <= 100:
