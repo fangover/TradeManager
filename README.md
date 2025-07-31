@@ -4,7 +4,7 @@
 **TradeManager** is an automated trading system I'm developing on MetaTrader 5. 
 As a beginner, I’m exploring my own ideas for managing risk and executing multiple trading strategies in Forex. 
 This project is purely for learning and experimentation. 
-I’m building something I enjoy, not intended for real trading or financial use
+I’m building something I enjoy, not intended for real trading
 
 ---
 
